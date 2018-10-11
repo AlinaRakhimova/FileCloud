@@ -81,7 +81,6 @@ public class SettingServiceBean implements SettingService {
     @Override
     @NotNull
     public String getSyncFolder() {
-        syncFolder = "D:/data/1/"; //FIXME
         return syncFolder;
     }
 
