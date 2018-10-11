@@ -1,0 +1,7 @@
+.root {
+     -fx-base: rgba(127, 210, 255, 0.88);
+ }
+
+ Text {
+     -fx-stroke: #454545;
+ }
