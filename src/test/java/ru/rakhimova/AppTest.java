@@ -14,13 +14,13 @@ import javax.jcr.SimpleCredentials;
 import java.net.MalformedURLException;
 
 
-@RunWith(CdiTestRunner.class)
+//@RunWith(CdiTestRunner.class)
 public class AppTest {
 
     private static final String URL = "http://localhost:8080/rmi";
 
-    @Inject
-    private SettingService settingService;
+//    @Inject
+//    private SettingService settingService;
 
     @Test
     public void loginTest() throws MalformedURLException, RepositoryException {

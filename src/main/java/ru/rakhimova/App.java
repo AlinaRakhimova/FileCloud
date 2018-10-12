@@ -6,19 +6,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ru.rakhimova.bean.service.BootstrapServiceBean;
-import ru.rakhimova.local.FolderLocalService;
-import ru.rakhimova.system.SettingService;
 
 import javax.enterprise.inject.se.SeContainerInitializer;
-import javax.inject.Inject;
 
-public class App extends  Application{
-
-    @Inject
-    private SettingService settingService;
-
-    @Inject
-    private FolderLocalService folderLocalService;
+public class App extends Application{
 
     @Override
     public void start(Stage primaryStage) throws Exception {

@@ -12,12 +12,9 @@ import ru.rakhimova.system.TimerService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.jcr.*;
-import java.util.logging.Logger;
 
 @ApplicationScoped
 public class ApplicationServiceBean implements ApplicationService {
-
-    private static final Logger LOGGER = Logger.getLogger(ApplicationServiceBean.class.getSimpleName());
 
     @Inject
     private SettingService settingService;
@@ -36,8 +33,9 @@ public class ApplicationServiceBean implements ApplicationService {
 
     @Loggable
     public void init() {
-      //  if (settingService.getSyncActive()) timerService.start();
-        if (settingService.getJcrActive()) login();
+        //  if (settingService.getSyncActive()) timerService.start();
+        if (settingService.getJcrActive())
+            login();
 
     }
 
@@ -45,14 +43,16 @@ public class ApplicationServiceBean implements ApplicationService {
     @Loggable
     public boolean login() {
         if (status()) return false;
-        try{
+        try {
             final String jcrURL = settingService.getJcrUrl();
             repository = new URLRemoteRepository(jcrURL);
+            System.out.println("repository: " + repository);
             final String jcrLogin = settingService.getJcrLogin();
             final String jcrPassword = settingService.getJcrPassword();
             final char[] password = jcrPassword.toCharArray();
             final SimpleCredentials credentials = new SimpleCredentials(jcrLogin, password);
             session = repository.login(credentials);
+            System.out.println("Session: " + session);
             return true;
         } catch (final Exception e) {
             error = e;
@@ -65,7 +65,7 @@ public class ApplicationServiceBean implements ApplicationService {
     public boolean logout() {
         if (repository == null) return false;
         if (session == null) return false;
-        try{
+        try {
             session.logout();
             repository = null;
             session = null;
@@ -74,7 +74,6 @@ public class ApplicationServiceBean implements ApplicationService {
             error = e;
             return false;
         }
-
     }
 
     @Override
@@ -107,13 +106,8 @@ public class ApplicationServiceBean implements ApplicationService {
         boolean status = status();
         System.out.println("Status: " + status);
         if (!status) return null;
-        try {
-            return session.getRootNode();
-        } catch (RepositoryException e) {
-            LOGGER.severe(e.getMessage());
-            error = e;
-            return null;
-        }
+        return session.getRootNode();
+
     }
 
     @Override
@@ -123,15 +117,10 @@ public class ApplicationServiceBean implements ApplicationService {
     }
 
     @Override
+    @SneakyThrows
     public boolean save() {
         if (!status()) return false;
-        try {
-            session.save();
-        } catch (RepositoryException e) {
-            LOGGER.severe(e.getMessage());
-            error = e;
-            return false;
-        }
+        session.save();
         return true;
     }
 }

@@ -3,12 +3,12 @@ package ru.rakhimova.bean.local;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.rakhimova.bean.service.SettingServiceBean;
 import ru.rakhimova.local.FileLocalService;
 import ru.rakhimova.system.SettingService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.jcr.Node;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,19 +19,19 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @ApplicationScoped
-public class FileLocalServiceBean implements FileLocalService {
+public class FileLocalServiceBean { // implements FileLocalService { //FIXME
 
     private static final Logger LOGGER = Logger.getLogger(FileLocalServiceBean.class.getSimpleName());
 
     @Inject
     private SettingService settingService;
 
-    @Override
+  //  @Override
     public void printListFileNameRoot() {
         for (String name : getListFileNameRoot()) System.out.println(name);
     }
 
-    @Override
+  //  @Override
     public @NotNull List<String> getListFileNameRoot() {
         final File root = getRoot();
         final String[] directories = root.list((dir, name) -> new File(dir, name).isFile());
@@ -43,7 +43,7 @@ public class FileLocalServiceBean implements FileLocalService {
     }
 
 
-    @Override
+   // @Override
     public void clearRoot() {
         final  File root = getRoot();
         final List<String> files = getListFileNameRoot();
@@ -54,7 +54,7 @@ public class FileLocalServiceBean implements FileLocalService {
     }
 
     @Nullable
-    @Override
+   // @Override
     @SneakyThrows
     public byte[] readData(@Nullable final String name) {
         if (name == null || name.isEmpty()) return new byte[]{};
@@ -67,7 +67,7 @@ public class FileLocalServiceBean implements FileLocalService {
         }
     }
 
-    @Override
+  //  @Override
     @SneakyThrows
     public void writeData(@Nullable final String name, byte[] data) {
         if (name == null || name.isEmpty()) return;
@@ -80,21 +80,21 @@ public class FileLocalServiceBean implements FileLocalService {
         }
     }
 
-    @Override
+   // @Override
     public boolean exist(@Nullable final String name) {
         if (name == null || name.isEmpty()) return false;
         final File file = new File(getRoot(), name);
         return file.exists();
     }
 
-    @Override
+   // @Override
     public void deleteFile(@Nullable final String fileName) {
         if (fileName == null || fileName.isEmpty()) return;
         final File file = new File(getRoot(), fileName);
         file.delete();
     }
 
-    @Override
+  //  @Override
     public void createTextFile(@Nullable String name, @Nullable String text) {
         if (text == null) return;
         writeData(name, text.getBytes());

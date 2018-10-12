@@ -3,12 +3,13 @@ package ru.rakhimova.basic;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.jcr.Node;
 import java.util.List;
 
 public interface FileService {
 
     @NotNull
-    List<String> getListFileNameRoot();
+    List<Node> getListFileNameRoot();
 
     void printListFileNameRoot();
 

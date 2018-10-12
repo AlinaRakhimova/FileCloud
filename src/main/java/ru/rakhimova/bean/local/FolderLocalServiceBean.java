@@ -3,36 +3,36 @@ package ru.rakhimova.bean.local;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.rakhimova.annotation.Loggable;
-import ru.rakhimova.bean.service.SettingServiceBean;
 import ru.rakhimova.local.FolderLocalService;
 import ru.rakhimova.system.SettingService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.jcr.Node;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
 @ApplicationScoped
-public class FolderLocalServiceBean implements FolderLocalService {
+public class FolderLocalServiceBean { // implements FolderLocalService { //FIXME
 
-//    @Inject
-    private SettingServiceBean settingService = new SettingServiceBean();
+    @Inject
+    private SettingService settingService;
 
     @Loggable
-    @Override
+  //  @Override
     public void init() {
-        String folderName = settingService.getSyncFolder();
+        final String folderName = settingService.getSyncFolder();
         final File file = new File(folderName);
         file.mkdirs();
     }
 
-    @Override
+    //  @Override
     public void printListFolderNameRoot() {
         for (String name : getListFolderNameRoot()) System.out.println(name);
     }
 
-    @Override
+    //  @Override
     public @NotNull List<String> getListFolderNameRoot() {
         final File root = getRoot();
         final String[] directories = root.list((dir, name) -> new File(dir, name).isDirectory());
@@ -43,7 +43,7 @@ public class FolderLocalServiceBean implements FolderLocalService {
         return new File(settingService.getSyncFolder());
     }
 
-    @Override
+ //   @Override
     public void createFolder(@Nullable String newFolderName) {
         if (newFolderName == null || newFolderName.isEmpty()) {
             int random = (int)(Math.random() * 10); //FIXME
@@ -54,14 +54,14 @@ public class FolderLocalServiceBean implements FolderLocalService {
         file.mkdirs();
     }
 
-    @Override
+  //  @Override
     public void deleteFolder(@Nullable final String folderName) {
         if (folderName == null || folderName.isEmpty()) return;
         final File file = new File(getRoot(), folderName);
         file.delete();
     }
 
-    @Override
+  //  @Override
     public void clearRoot() {
         final  File root = getRoot();
         final List<String> directories = getListFolderNameRoot();

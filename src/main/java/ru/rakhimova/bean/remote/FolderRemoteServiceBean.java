@@ -3,7 +3,6 @@ package ru.rakhimova.bean.remote;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.rakhimova.bean.service.ApplicationServiceBean;
 import ru.rakhimova.remote.FolderRemoteService;
 import ru.rakhimova.system.ApplicationService;
 
@@ -27,22 +26,36 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
     private ApplicationService applicationService;
 
     @Override
+    @SneakyThrows
     public void printListFolderNameRoot() {
-        for (String name : getListFolderNameRoot()) System.out.println(name);
+        for (Node node : getListFolderNameRoot()) System.out.println(node.getName());
     }
 
     @Override
-    public @NotNull List<String> getListFolderNameRoot() {
-        final List<String> listFolderName = new ArrayList<>();
+    public @NotNull List<Node> getListFolderNameRoot() {
+        final List<Node> listFolderName;
         final Node root = applicationService.getRootNode();
-        if (root == null) return Collections.emptyList(); //?
+        if (root == null) return Collections.emptyList();
+        listFolderName = getListFolderNameService(root);
+        return listFolderName;
+    }
+
+    public @NotNull List<Node> getListFolderNameInFolder(Node checkFolder) {
+        final List<Node> listFolderName;
+        if (checkFolder == null) return Collections.emptyList();
+        listFolderName = getListFolderNameService(checkFolder);
+        return listFolderName;
+    }
+
+    public List<Node> getListFolderNameService(Node root){
+        final List<Node> listFolderName = new ArrayList<>();
         try {
             final NodeIterator nt = root.getNodes();
             while (nt.hasNext()) {
                 final Node node = nt.nextNode();
                 final NodeType nodeType = node.getPrimaryNodeType();
                 final boolean isFolder = nodeType.isNodeType("nt:folder");
-                if (isFolder) listFolderName.add(node.getName());
+                if (isFolder) listFolderName.add(node);
             }
             return listFolderName;
         } catch (final RepositoryException e) {
@@ -54,7 +67,7 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
     @Override
     public void createFolder(String folderName) {
         @Nullable final Node root = applicationService.getRootNode();
-        System.out.println(root);
+        System.out.println("root: " + root);
         if (root == null) return;
         try {
             root.addNode(folderName, "nt:folder");
@@ -67,30 +80,25 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
     @SneakyThrows
     public void deleteFolder(@Nullable final String folderName) {
         if (folderName == null || folderName.isEmpty()) return;
-        try {
-            final Node root = applicationService.getRootNode();
-            final Node node = root.getNode(folderName);
-            node.remove();
-        } catch (RepositoryException e) {
-            LOGGER.severe(e.getMessage());
-        }
+        final Node root = applicationService.getRootNode();
+        final Node node = root.getNode(folderName);
+        node.remove();
+
     }
 
     @Override
     @SneakyThrows
     public void clearRoot() {
         final Node root = applicationService.getRootNode();
-        try {
-            final NodeIterator nt = root.getNodes();
-            while (nt.hasNext()) {
-                final Node node = nt.nextNode();
-                final NodeType nodeType = node.getPrimaryNodeType();
-                final boolean isFolder = nodeType.isNodeType("nt:folder");
-                if (isFolder) node.remove();
-            }
-        } catch (final RepositoryException e) {
-            LOGGER.severe(e.getMessage());
+
+        final NodeIterator nt = root.getNodes();
+        while (nt.hasNext()) {
+            final Node node = nt.nextNode();
+            final NodeType nodeType = node.getPrimaryNodeType();
+            final boolean isFolder = nodeType.isNodeType("nt:folder");
+            if (isFolder) node.remove();
         }
+
     }
 
 }

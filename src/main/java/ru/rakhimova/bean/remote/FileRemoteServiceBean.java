@@ -28,22 +28,37 @@ public class FileRemoteServiceBean implements FileRemoteService {
     private ApplicationService applicationService;
 
     @Override
+    @SneakyThrows
     public void printListFileNameRoot() {
-        for (String name : getListFileNameRoot()) System.out.println(name);
+        for (Node file : getListFileNameRoot()) System.out.println(file.getName());
     }
 
     @Override
-    public @NotNull List<String> getListFileNameRoot() {
-        final List<String> listFolderName = new ArrayList<>();
+    public @NotNull List<Node> getListFileNameRoot() {
+        final List<Node> listFolderName;
         final Node root = applicationService.getRootNode();
         if (root == null) return Collections.emptyList();
+        listFolderName = getListFileNameService(root);
+        return listFolderName;
+    }
+
+    public List<Node> getListFileNameInFolder(Node mainFolder) {
+        final List<Node> listFolderName;
+        final Node root = mainFolder;
+        if (root == null) return Collections.emptyList();
+        listFolderName = getListFileNameService(root);
+        return listFolderName;
+    }
+
+    public @NotNull List<Node> getListFileNameService(Node root){
+        final List<Node> listFolderName = new ArrayList<>();
         try {
             final NodeIterator nt = root.getNodes();
             while (nt.hasNext()) {
                 final Node node = nt.nextNode();
                 final NodeType nodeType = node.getPrimaryNodeType();
                 final boolean isFile = nodeType.isNodeType("nt:file");
-                if (isFile) listFolderName.add(node.getName());
+                if (isFile) listFolderName.add(node);
             }
             return listFolderName;
         } catch (final RepositoryException e) {
@@ -99,7 +114,7 @@ public class FileRemoteServiceBean implements FileRemoteService {
         final Binary binary = session.getValueFactory().createBinary(stream);
         contentNode.setProperty("jcr:data", binary);
         final Calendar created = Calendar.getInstance();
-        contentNode.setProperty("jcr:lastModifier", created);
+//        contentNode.setProperty("jcr:lastModifier", created);
         } catch (RepositoryException e) {
             e.printStackTrace();
         }
