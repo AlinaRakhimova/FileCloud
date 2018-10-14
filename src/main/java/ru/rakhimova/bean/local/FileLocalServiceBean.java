@@ -3,31 +3,27 @@ package ru.rakhimova.bean.local;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.rakhimova.bean.service.SettingServiceBean;
 import ru.rakhimova.local.FileLocalService;
 import ru.rakhimova.system.SettingService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
 @ApplicationScoped
 public class FileLocalServiceBean implements FileLocalService {
-
-    private static final Logger LOGGER = Logger.getLogger(FileLocalServiceBean.class.getSimpleName());
 
     @Inject
     private SettingService settingService;
 
     @Override
     public void printListFileNameRoot() {
+        System.out.println("List files:");
         for (String name : getListFileNameRoot()) System.out.println(name);
     }
 
@@ -41,7 +37,6 @@ public class FileLocalServiceBean implements FileLocalService {
     private File getRoot() {
         return new File(settingService.getSyncFolder());
     }
-
 
     @Override
     public void clearRoot() {
@@ -59,12 +54,7 @@ public class FileLocalServiceBean implements FileLocalService {
     public byte[] readData(@Nullable final String name) {
         if (name == null || name.isEmpty()) return new byte[]{};
         final File file = new File(getRoot(), name);
-        try {
-            return Files.readAllBytes(file.toPath());
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
-            return new byte[]{};
-        }
+        return Files.readAllBytes(file.toPath());
     }
 
     @Override
@@ -73,11 +63,7 @@ public class FileLocalServiceBean implements FileLocalService {
         if (name == null || name.isEmpty()) return;
         final File file = new File(getRoot(), name);
         Path path = Paths.get(file.toURI());
-        try {
-            Files.write(path, data);
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
-        }
+        Files.write(path, data);
     }
 
     @Override
@@ -99,4 +85,5 @@ public class FileLocalServiceBean implements FileLocalService {
         if (text == null) return;
         writeData(name, text.getBytes());
     }
+
 }

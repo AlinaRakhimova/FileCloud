@@ -1,43 +1,37 @@
 package ru.rakhimova.controller;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import lombok.SneakyThrows;
 import ru.rakhimova.bean.local.FileLocalServiceBean;
 import ru.rakhimova.bean.local.FolderLocalServiceBean;
+import ru.rakhimova.bean.remote.FileRemoteServiceBean;
 import ru.rakhimova.bean.remote.FolderRemoteServiceBean;
+import ru.rakhimova.bean.service.ApplicationServiceBean;
 import ru.rakhimova.bean.service.SettingServiceBean;
-import ru.rakhimova.local.FileLocalService;
-import ru.rakhimova.local.FolderLocalService;
-import ru.rakhimova.remote.FileRemoteService;
-import ru.rakhimova.remote.FolderRemoteService;
-import ru.rakhimova.system.SettingService;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import javax.enterprise.inject.spi.CDI;
+import javax.jcr.Node;
+import javax.jcr.nodetype.NodeType;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Deque;
-
+import java.util.List;
 
 public class Controller {
 
-    @Inject
-    private FolderRemoteService folderRemoteService;
+    private FolderRemoteServiceBean folderRemoteService = CDI.current().select(FolderRemoteServiceBean.class).get();
 
-    @Inject
-    private FileRemoteService fileRemoteService;
+    private FileRemoteServiceBean fileRemoteService = CDI.current().select(FileRemoteServiceBean.class).get();
 
-    @Inject
-    private FolderLocalService folderLocalService;
+    private FolderLocalServiceBean folderLocalService = CDI.current().select(FolderLocalServiceBean.class).get();
 
-    @Inject
-    private FileLocalService fileLocalService;
+    private FileLocalServiceBean fileLocalService = CDI.current().select(FileLocalServiceBean.class).get();
 
-    @Inject
-    private SettingService settingService;
+    private SettingServiceBean settingService = CDI.current().select(SettingServiceBean.class).get();
+
+    private ApplicationServiceBean applicationService = CDI.current().select(ApplicationServiceBean.class).get();
 
     @FXML
     private TextField textFieldName;
@@ -57,8 +51,8 @@ public class Controller {
     }
 
     public void addFile(MouseEvent mouseEvent) {
-        String fileName = textFieldName.getText();
-        String text = "Hello"; //FIXME
+        final String fileName = textFieldName.getText();
+        final String text = "Hello"; //FIXME
         if (buttonRemote.isSelected()) {
             fileRemoteService.createTextFile(fileName, text);
         } else fileLocalService.createTextFile(fileName, text);
@@ -66,7 +60,7 @@ public class Controller {
     }
 
     public void deleteFile(MouseEvent mouseEvent) {
-        String fileName = textFieldName.getText();
+        final String fileName = textFieldName.getText();
         if (buttonRemote.isSelected()) {
             fileRemoteService.deleteFile(fileName);
         } else fileLocalService.deleteFile(fileName);
@@ -74,43 +68,75 @@ public class Controller {
     }
 
     public void deleteFolder(MouseEvent mouseEvent) {
-        String folderName = textFieldName.getText();
+        final String folderName = textFieldName.getText();
         if (buttonRemote.isSelected()) {
             folderRemoteService.deleteFolder(folderName);
         } else folderLocalService.deleteFolder(folderName);
         refresh(mouseEvent);
     }
 
+    @SneakyThrows
     public void refresh(MouseEvent mouseEvent) {
         if (buttonRemote.isSelected()) {
-            //TODO
-        } else { //FIXME
-            String path = settingService.getSyncFolder();
-            TreeItem<String> rootTreeNode = new TreeItem<String>("SyncFolder");
-            File dir = new File(path);
-            if (!dir.exists() || !dir.isDirectory()) {
-                System.out.println("Incorrect directory name");
-            }
-            Deque<File> stack = new ArrayDeque<>();
-            stack.add(dir);
-            while (!stack.isEmpty()) {
-                File element = stack.pollLast();
-                if (element.isDirectory()) {
-                    TreeItem<String> newFolder = new TreeItem<>(element.getName());
-                        File[] files = element.listFiles();
-                        for (int i = files.length - 1; i >= 0; i--) {
-                            String fileName = files[i].getName();
-                            newFolder.getChildren().add(new TreeItem<>(fileName));
-                            stack.add(files[i]);
-                        }
-                    if (!newFolder.getValue().equals(dir.getName())) {
-                        rootTreeNode.getChildren().add(newFolder);
-                    }
+            showRemoteRepository();
+        } else showSyncFolder();
+    }
+
+    private void showSyncFolder() { //FIXME
+        String path = settingService.getSyncFolder();
+        TreeItem<String> rootTreeNode = new TreeItem<>("SyncFolder");
+        File dir = new File(path);
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("Incorrect directory name");
+        }
+        Deque<File> stack = new ArrayDeque<>();
+        stack.add(dir);
+        while (!stack.isEmpty()) {
+            File element = stack.pollLast();
+            if (element.isDirectory()) {
+                TreeItem<String> newFolder = new TreeItem<>(element.getName());
+                File[] files = element.listFiles();
+                for (int i = files.length - 1; i >= 0; i--) {
+                    String fileName = files[i].getName();
+                    newFolder.getChildren().add(new TreeItem<>(fileName));
+                    stack.add(files[i]);
+                }
+                if (!newFolder.getValue().equals(dir.getName())) {
+                    rootTreeNode.getChildren().add(newFolder);
                 }
             }
-
-            treeViewFiles.setRoot(rootTreeNode);
         }
+        treeViewFiles.setRoot(rootTreeNode);
+    }
+
+    @SneakyThrows
+    private void showRemoteRepository() { //FIXME
+        TreeItem<String> rootTreeNode = new TreeItem<>("Remote repository");
+        final Node root = applicationService.getRootNode();
+        folderRemoteService.printListFolderNameRoot();
+        fileRemoteService.printListFileNameRoot();
+
+        Deque<Node> stack = new ArrayDeque<>();
+        stack.add(root);
+        while (!stack.isEmpty()) {
+            Node node = stack.pollLast();
+            final NodeType nodeType = node.getPrimaryNodeType();
+            final boolean isFolder = nodeType.isNodeType("nt:folder");
+            if (isFolder) {
+                TreeItem<String> newFolder = new TreeItem<>(node.getName());
+                List<Node> folders = folderRemoteService.getListFolderNameInFolder(node);
+                List<Node> files = fileRemoteService.getListFileNameInFolder(node); // FIXME
+                for (int i = folders.size() - 1; i >= 0; i--) {
+                    String fileName = folders.get(i).getName();
+                    newFolder.getChildren().add(new TreeItem<>(fileName));
+                    stack.add(folders.get(i));
+                }
+                if (!newFolder.getValue().equals(root.getName())) {
+                    rootTreeNode.getChildren().add(newFolder);
+                }
+            }
+        }
+        treeViewFiles.setRoot(rootTreeNode);
     }
 
     public void changeFile(MouseEvent mouseEvent) {
@@ -120,6 +146,7 @@ public class Controller {
     public void changeLabelRemote(MouseEvent mouseEvent) {
        if (buttonRemote.isSelected()) buttonRemote.setText("Remote");
        else buttonRemote.setText("Local");
+       refresh(mouseEvent);
     }
 
 }

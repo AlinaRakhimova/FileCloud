@@ -1,14 +1,8 @@
 package ru.rakhimova.basic;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public interface FileService {
-
-    @NotNull
-    List<String> getListFileNameRoot();
 
     void printListFileNameRoot();
 

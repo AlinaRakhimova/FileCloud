@@ -3,7 +3,6 @@ package ru.rakhimova.bean.local;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.rakhimova.annotation.Loggable;
-import ru.rakhimova.bean.service.SettingServiceBean;
 import ru.rakhimova.local.FolderLocalService;
 import ru.rakhimova.system.SettingService;
 
@@ -16,8 +15,8 @@ import java.util.List;
 @ApplicationScoped
 public class FolderLocalServiceBean implements FolderLocalService {
 
-//    @Inject
-    private SettingServiceBean settingService = new SettingServiceBean();
+    @Inject
+    private SettingService settingService;
 
     @Loggable
     @Override
@@ -29,6 +28,7 @@ public class FolderLocalServiceBean implements FolderLocalService {
 
     @Override
     public void printListFolderNameRoot() {
+        System.out.println("List folders:");
         for (String name : getListFolderNameRoot()) System.out.println(name);
     }
 
@@ -70,4 +70,5 @@ public class FolderLocalServiceBean implements FolderLocalService {
             file.delete();
         }
     }
+
 }
