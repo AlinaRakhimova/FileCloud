@@ -106,7 +106,6 @@ public class Controller {
                 }
             }
         }
-
         treeViewFiles.setRoot(rootTreeNode);
     }
 
@@ -114,6 +113,8 @@ public class Controller {
     private void showRemoteRepository() { //FIXME
         TreeItem<String> rootTreeNode = new TreeItem<>("Remote repository");
         final Node root = applicationService.getRootNode();
+        folderRemoteService.printListFolderNameRoot();
+        fileRemoteService.printListFileNameRoot();
 
         Deque<Node> stack = new ArrayDeque<>();
         stack.add(root);
@@ -124,7 +125,7 @@ public class Controller {
             if (isFolder) {
                 TreeItem<String> newFolder = new TreeItem<>(node.getName());
                 List<Node> folders = folderRemoteService.getListFolderNameInFolder(node);
-                List<Node> files = fileRemoteService.getListFileNameInFolder(node);
+                List<Node> files = fileRemoteService.getListFileNameInFolder(node); // FIXME
                 for (int i = folders.size() - 1; i >= 0; i--) {
                     String fileName = folders.get(i).getName();
                     newFolder.getChildren().add(new TreeItem<>(fileName));
@@ -135,7 +136,6 @@ public class Controller {
                 }
             }
         }
-
         treeViewFiles.setRoot(rootTreeNode);
     }
 

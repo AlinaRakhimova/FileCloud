@@ -7,10 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.rakhimova.annotation.Loggable;
 import ru.rakhimova.system.SettingService;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -55,7 +52,6 @@ public class SettingServiceBean implements SettingService {
     }
 
     @Override
-    @NotNull
     public boolean getJcrActive() {
         return jcrActive;
     }
@@ -91,8 +87,8 @@ public class SettingServiceBean implements SettingService {
     }
 
     @Override
-    @NotNull
     public boolean getSyncActive() {
         return syncActive;
     }
+
 }

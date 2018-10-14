@@ -29,6 +29,7 @@ public class FolderLocalServiceBean { // implements FolderLocalService { //FIXME
 
     //  @Override
     public void printListFolderNameRoot() {
+        System.out.println("List folders:");
         for (String name : getListFolderNameRoot()) System.out.println(name);
     }
 
@@ -70,4 +71,5 @@ public class FolderLocalServiceBean { // implements FolderLocalService { //FIXME
             file.delete();
         }
     }
+
 }

@@ -33,10 +33,8 @@ public class ApplicationServiceBean implements ApplicationService {
 
     @Loggable
     public void init() {
-        //  if (settingService.getSyncActive()) timerService.start();
-        if (settingService.getJcrActive())
-            login();
-
+        //  if (settingService.getSyncActive()) timerService.start(); //FIXME
+        if (settingService.getJcrActive()) login();
     }
 
     @Override
@@ -46,13 +44,11 @@ public class ApplicationServiceBean implements ApplicationService {
         try {
             final String jcrURL = settingService.getJcrUrl();
             repository = new URLRemoteRepository(jcrURL);
-            System.out.println("repository: " + repository);
             final String jcrLogin = settingService.getJcrLogin();
             final String jcrPassword = settingService.getJcrPassword();
             final char[] password = jcrPassword.toCharArray();
             final SimpleCredentials credentials = new SimpleCredentials(jcrLogin, password);
             session = repository.login(credentials);
-            System.out.println("Session: " + session);
             return true;
         } catch (final Exception e) {
             error = e;
@@ -103,11 +99,8 @@ public class ApplicationServiceBean implements ApplicationService {
     @Nullable
     @SneakyThrows
     public Node getRootNode() {
-        boolean status = status();
-        System.out.println("Status: " + status);
-        if (!status) return null;
+        if (!status()) return null;
         return session.getRootNode();
-
     }
 
     @Override

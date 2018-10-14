@@ -24,7 +24,7 @@
             <Button id="buttonDeleteFolder" mnemonicParsing="false" onMouseClicked="#deleteFolder" text="Delete folder" />
             <Button id="buttonAddFile" alignment="CENTER" contentDisplay="TOP" mnemonicParsing="false" onMouseClicked="#addFile" text="Add file" />
             <Button mnemonicParsing="false" onMouseClicked="#deleteFile" text="Delete file" />
-            <Label prefHeight="17.0" prefWidth="97.0" text="Name file/folder:" />
+            <Label prefHeight="17.0" prefWidth="97.0" text="Name file/folder: " />
             <TextField id="textFieldName" fx:id="textFieldName" prefHeight="25.0" prefWidth="190.0" />
             <ToggleButton id="buttonRemote" fx:id="buttonRemote" mnemonicParsing="false" onMouseClicked="#changeLabelRemote" text="Local" textAlignment="CENTER" />
          </children>
