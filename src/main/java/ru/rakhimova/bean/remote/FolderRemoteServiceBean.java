@@ -18,14 +18,20 @@ import java.util.List;
 @ApplicationScoped
 public class FolderRemoteServiceBean implements FolderRemoteService {
 
+    private static final String NT_FOLDER = "nt:folder";
+
+    private static final String PRINT_LIST = "List folders:";
+
+    private static final String NEW_FOLDER_NAME = "New folder ";
+
     @Inject
     private ApplicationService applicationService;
 
     @Override
     @SneakyThrows
     public void printListFolderNameRoot() {
-        System.out.println("List folders:");
-        for (Node node : getListFolderNameRoot()) System.out.println(node.getName());
+        System.out.println(PRINT_LIST);
+        for (final Node node : getListFolderNameRoot()) System.out.println(node.getName());
     }
 
     @Override
@@ -37,21 +43,20 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
         return listFolderName;
     }
 
-    public @NotNull List<Node> getListFolderNameInFolder(Node checkFolder) {
+    public @NotNull List<Node> getListFolderNameInFolder(@NotNull final Node checkFolder) {
         final List<Node> listFolderName;
-        if (checkFolder == null) return Collections.emptyList();
         listFolderName = getListFolderNameService(checkFolder);
         return listFolderName;
     }
 
     @SneakyThrows
-    private List<Node> getListFolderNameService(Node root) {
+    private List<Node> getListFolderNameService(@NotNull final Node root) {
         final List<Node> listFolderName = new ArrayList<>();
         final NodeIterator nt = root.getNodes();
         while (nt.hasNext()) {
             final Node node = nt.nextNode();
             final NodeType nodeType = node.getPrimaryNodeType();
-            final boolean isFolder = nodeType.isNodeType("nt:folder");
+            final boolean isFolder = nodeType.isNodeType(NT_FOLDER);
             if (isFolder) listFolderName.add(node);
         }
         return listFolderName;
@@ -59,10 +64,14 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
 
     @Override
     @SneakyThrows
-    public void createFolder(String folderName) {
-        @Nullable final Node root = applicationService.getRootNode();
+    public void createFolder(@Nullable String newFolderName) {
+        if (newFolderName == null || newFolderName.isEmpty()) {
+            int random = (int) (Math.random() * 10); //FIXME: Продумать другой алгоритм присваивания номера папки по умолчанию
+            newFolderName = NEW_FOLDER_NAME + random;
+        }
+        final Node root = applicationService.getRootNode();
         if (root == null) return;
-        root.addNode(folderName, "nt:folder");
+        root.addNode(newFolderName, NT_FOLDER);
     }
 
     @Override
@@ -83,7 +92,7 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
         while (nt.hasNext()) {
             final Node node = nt.nextNode();
             final NodeType nodeType = node.getPrimaryNodeType();
-            final boolean isFolder = nodeType.isNodeType("nt:folder");
+            final boolean isFolder = nodeType.isNodeType(NT_FOLDER);
             if (isFolder) node.remove();
         }
     }

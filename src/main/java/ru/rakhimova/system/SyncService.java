@@ -9,4 +9,5 @@ public interface SyncService {
     boolean start();
 
     boolean stop();
+
 }

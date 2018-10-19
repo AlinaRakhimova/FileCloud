@@ -9,13 +9,13 @@ import ru.rakhimova.bean.service.BootstrapServiceBean;
 
 import javax.enterprise.inject.se.SeContainerInitializer;
 
-public class App extends  Application{
+public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        Parent root = FXMLLoader.load(getClass().getResource("/fxml/mainFrame.fxml"));
-        Scene scene = new Scene(root, 730, 350);
+        final Parent root = FXMLLoader.load(getClass().getResource("/fxml/mainFrame.fxml"));
+        final Scene scene = new Scene(root, 730, 350);
         primaryStage.setTitle("FileCloud");
         primaryStage.setScene(scene);
         primaryStage.getScene().getStylesheets().add("css/styleMainFrame.css");
@@ -23,9 +23,8 @@ public class App extends  Application{
     }
 
     public static void main(String[] args) {
-
         SeContainerInitializer.newInstance().addPackages(App.class).initialize().select(BootstrapServiceBean.class).get().init();
-
         launch(App.class, args);
     }
+
 }

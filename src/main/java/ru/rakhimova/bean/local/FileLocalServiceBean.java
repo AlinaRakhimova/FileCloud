@@ -13,24 +13,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @ApplicationScoped
 public class FileLocalServiceBean implements FileLocalService {
+
+    private static final String PRINT_LIST = "List files:";
 
     @Inject
     private SettingService settingService;
 
     @Override
     public void printListFileNameRoot() {
-        System.out.println("List files:");
-        for (String name : getListFileNameRoot()) System.out.println(name);
+        System.out.println(PRINT_LIST);
+        for (final String name : getListFileNameRoot()) System.out.println(name);
     }
 
     @Override
     public @NotNull List<String> getListFileNameRoot() {
         final File root = getRoot();
         final String[] directories = root.list((dir, name) -> new File(dir, name).isFile());
+        if (directories == null) return Collections.emptyList();
         return Arrays.asList(directories);
     }
 
@@ -40,7 +44,7 @@ public class FileLocalServiceBean implements FileLocalService {
 
     @Override
     public void clearRoot() {
-        final  File root = getRoot();
+        final File root = getRoot();
         final List<String> files = getListFileNameRoot();
         for (final String name : files) {
             final File file = new File(root, name);
@@ -59,7 +63,7 @@ public class FileLocalServiceBean implements FileLocalService {
 
     @Override
     @SneakyThrows
-    public void writeData(@Nullable final String name, byte[] data) {
+    public void writeData(@Nullable final String name, @Nullable final byte[] data) {
         if (name == null || name.isEmpty()) return;
         final File file = new File(getRoot(), name);
         Path path = Paths.get(file.toURI());

@@ -30,6 +30,6 @@ public interface ApplicationService {
     Session session();
 
     @Nullable
-    Node     getRootNode();
+    Node getRootNode();
 
 }

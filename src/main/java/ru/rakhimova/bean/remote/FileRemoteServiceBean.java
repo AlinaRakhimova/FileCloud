@@ -20,14 +20,26 @@ import java.util.List;
 @ApplicationScoped
 public class FileRemoteServiceBean implements FileRemoteService {
 
+    private static final String PRINT_LIST = "List files:";
+
+    private static final String NT_FILE = "nt:file";
+
+    private static final String JCR_JAVA = "jcr:java";
+
+    private static final String JCR_CONTENT = "jcr:content";
+
+    private static final String NT_RESOURCE = "nt:resource";
+
+    private static final String JCR_LAST_MODIFIER = "jcr:lastModifier";
+
     @Inject
     private ApplicationService applicationService;
 
     @Override
     @SneakyThrows
     public void printListFileNameRoot() {
-        System.out.println("List files:");
-        for (Node file : getListFileNameRoot()) System.out.println(file.getName());
+        System.out.println(PRINT_LIST);
+        for (final Node file : getListFileNameRoot()) System.out.println(file.getName());
     }
 
     @Override
@@ -39,23 +51,20 @@ public class FileRemoteServiceBean implements FileRemoteService {
         return listFolderName;
     }
 
-    public List<Node> getListFileNameInFolder(Node mainFolder) {
+    public @NotNull List<Node> getListFileNameInFolder(@NotNull final Node mainFolder) {
         final List<Node> listFolderName;
-        final Node root = mainFolder;
-        if (root == null) return Collections.emptyList();
-        listFolderName = getListFileNameService(root);
+        listFolderName = getListFileNameService(mainFolder);
         return listFolderName;
     }
 
-    @NotNull
     @SneakyThrows
-    private List<Node> getListFileNameService(Node root) {
+    private @NotNull List<Node> getListFileNameService(@NotNull final Node root) {
         final List<Node> listFolderName = new ArrayList<>();
         final NodeIterator nt = root.getNodes();
         while (nt.hasNext()) {
             final Node node = nt.nextNode();
             final NodeType nodeType = node.getPrimaryNodeType();
-            final boolean isFile = nodeType.isNodeType("nt:file");
+            final boolean isFile = nodeType.isNodeType(NT_FILE);
             if (isFile) listFolderName.add(node);
         }
         return listFolderName;
@@ -65,45 +74,46 @@ public class FileRemoteServiceBean implements FileRemoteService {
     @SneakyThrows
     public void clearRoot() {
         final Node root = applicationService.getRootNode();
+        if (root == null) return;
         final NodeIterator nt = root.getNodes();
         while (nt.hasNext()) {
             final Node node = nt.nextNode();
             final NodeType nodeType = node.getPrimaryNodeType();
-            final boolean isFile = nodeType.isNodeType("nt:file");
+            final boolean isFile = nodeType.isNodeType(NT_FILE);
             if (isFile) node.remove();
         }
     }
 
     @Override
     @SneakyThrows
-    public @Nullable byte[] readData(String name) {
+    public @Nullable byte[] readData(@Nullable final String name) {
         if (name == null || name.isEmpty()) return new byte[]{};
         final Node root = applicationService.getRootNode();
         if (root == null) return new byte[]{};
         final Node node = root.getNode(name);
-        final Binary binary = node.getProperty("jcr:java").getBinary();
+        final Binary binary = node.getProperty(JCR_JAVA).getBinary();
         return IOUtils.toByteArray(binary.getStream());
     }
 
     @Override
     @SneakyThrows
-    public void writeData(String name, byte[] data) {
+    public void writeData(@Nullable final String name, @Nullable final byte[] data) {
         if (name == null || name.isEmpty()) return;
         final Session session = applicationService.session();
         if (session == null) return;
         final Node root = session.getRootNode();
-        final Node file = root.addNode(name, "nt:file");
-        final Node contentNode = file.addNode("jcr:content", "nt:resource");
+        final Node file = root.addNode(name, NT_FILE);
+        final Node contentNode = file.addNode(JCR_CONTENT, NT_RESOURCE);
         final ByteArrayInputStream stream = new ByteArrayInputStream(data);
         final Binary binary = session.getValueFactory().createBinary(stream);
-        contentNode.setProperty("jcr:data", binary);
+        contentNode.setProperty(JCR_JAVA, binary);
         final Calendar created = Calendar.getInstance();
-//        contentNode.setProperty("jcr:lastModifier", created); //FIXME
+        contentNode.setProperty(JCR_LAST_MODIFIER, created); //FIXME
     }
 
     @Override
     @SneakyThrows
-    public boolean exist(String name) {
+    public boolean exist(@Nullable final String name) {
         if (name == null || name.isEmpty()) return false;
         final Node root = applicationService.getRootNode();
         if (root == null) return false;
