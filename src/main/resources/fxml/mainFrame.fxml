@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane alignment="center" hgap="10" prefHeight="310.0" prefWidth="736.0" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.rakhimova.controller.Controller">
+   <children>
+      <ScrollPane prefHeight="241.0" prefWidth="620.0" GridPane.rowIndex="1">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="240.0" prefWidth="679.0">
+               <children>
+                  <TreeView id="treeViewFiles" fx:id="treeViewFiles" onMouseClicked="#changeFile" prefHeight="241.0" prefWidth="679.0" />
+               </children>
+            </AnchorPane>
+        </content>
+      </ScrollPane>
+      <HBox alignment="CENTER_LEFT" nodeOrientation="LEFT_TO_RIGHT" prefHeight="30.0" prefWidth="693.0">
+         <children>
+               <Button id="buttonRefresh" mnemonicParsing="false" onMouseClicked="#refresh" text="Refresh" />
+            <Button id="buttonAddFolder" mnemonicParsing="false" onMouseClicked="#addFolder" text="Add folder" />
+            <Button id="buttonDeleteFolder" mnemonicParsing="false" onMouseClicked="#deleteFolder" text="Delete folder" />
+            <Button id="buttonAddFile" alignment="CENTER" contentDisplay="TOP" mnemonicParsing="false" onMouseClicked="#addFile" text="Add file" />
+            <Button mnemonicParsing="false" onMouseClicked="#deleteFile" text="Delete file" />
+            <Label prefHeight="17.0" prefWidth="97.0" text="Name file/folder: " />
+            <TextField id="textFieldName" fx:id="textFieldName" prefHeight="25.0" prefWidth="190.0" />
+            <ToggleButton id="buttonRemote" fx:id="buttonRemote" mnemonicParsing="false" onMouseClicked="#changeLabelRemote" text="Local" textAlignment="CENTER" />
+         </children>
+         <opaqueInsets>
+            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+         </opaqueInsets>
+      </HBox>
+   </children>
+   <columnConstraints>
+      <ColumnConstraints />
+      <ColumnConstraints />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" />
+      <RowConstraints />
+   </rowConstraints>
+</GridPane>
