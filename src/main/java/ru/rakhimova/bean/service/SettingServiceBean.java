@@ -26,6 +26,11 @@ public class SettingServiceBean implements SettingService {
     private static final String KEY_SYNC_FOLDER = "sync.folder";
     private static final String KEY_SYNC_TIMEOUT = "sync.timeout";
 
+    private static final String JCR_URL_DEFAULT = "localhost";
+    private static final String JCR_LOGIN_DEFAULT = "admin";
+    private static final String JSC = "admin";
+    private static final String SYNC_FOLDER_DEFAULT = "./temp/";
+
     private String jcrLogin;
     private String jcrPassword;
     private String jcrUrl;
@@ -42,11 +47,11 @@ public class SettingServiceBean implements SettingService {
         final InputStream inputStream = classLoader.getResourceAsStream(FILE_NAME);
         properties.load(inputStream);
 
-        jcrUrl = properties.getOrDefault(KEY_JCR_URL, "localhost").toString();
-        jcrLogin = properties.getOrDefault(KEY_JCR_LOGIN, "admin").toString();
-        jcrPassword = properties.getOrDefault(KEY_JCR_PASSWORD, "admin").toString();
+        jcrUrl = properties.getOrDefault(KEY_JCR_URL, JCR_URL_DEFAULT).toString();
+        jcrLogin = properties.getOrDefault(KEY_JCR_LOGIN, JCR_LOGIN_DEFAULT).toString();
+        jcrPassword = properties.getOrDefault(KEY_JCR_PASSWORD, JSC).toString();
         jcrActive = Boolean.parseBoolean(properties.getOrDefault(KEY_JCR_ACTIVE, true).toString());
-        syncFolder = properties.getOrDefault(KEY_SYNC_FOLDER, "./temp/").toString();
+        syncFolder = properties.getOrDefault(KEY_SYNC_FOLDER, SYNC_FOLDER_DEFAULT).toString();
         syncTimeout = Integer.parseInt(properties.getOrDefault(KEY_SYNC_TIMEOUT, 1000).toString());
         syncActive = Boolean.parseBoolean(properties.getOrDefault(KEY_SYNC_ACTIVE, false).toString());
     }

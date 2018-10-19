@@ -27,4 +27,5 @@ public class BootstrapServiceBean implements BootstrapService {
         folderLocalService.init();
         applicationService.init();
     }
+
 }

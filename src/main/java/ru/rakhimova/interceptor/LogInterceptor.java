@@ -12,7 +12,8 @@ public class LogInterceptor {
 
     @AroundInvoke
     public Object intercept(final InvocationContext context) throws Exception {
-        System.out.println(context.getTarget().getClass().getSimpleName() + ": " + context.getMethod().getName());
+        System.out.println(context.getTarget().getClass().getSimpleName() + ": " + context.getMethod().getName()); //FIXME: Разделить и сделать проверку на null
         return context.proceed();
     }
+
 }

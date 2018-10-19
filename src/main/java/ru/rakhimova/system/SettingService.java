@@ -26,4 +26,5 @@ public interface SettingService {
 
     @NotNull
     boolean getSyncActive();
+
 }
