@@ -1,17 +1,15 @@
-package ru.rakhimova.bean;
+package ru.rakhimova.bean.service;
 
-import ru.rakhimova.system.SyncService;
+import ru.rakhimova.annotation.Loggable;
 import ru.rakhimova.system.SyncTask;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.TimerTask;
 
 @ApplicationScoped
 public class SyncTaskBean extends TimerTask implements SyncTask {
 
-//    @Inject
-//    private SyncService syncService;
+    private SyncServiceBean syncService = new SyncServiceBean();
 
     public TimerTask get() {
         return this;
@@ -23,7 +21,8 @@ public class SyncTaskBean extends TimerTask implements SyncTask {
     }
 
     @Override
+    @Loggable
     public void run() {
-        //syncService.sync();
+        syncService.sync();
     }
 }

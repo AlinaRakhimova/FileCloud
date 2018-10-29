@@ -20,7 +20,7 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
 
     private static final String NT_FOLDER = "nt:folder";
 
-    private static final String PRINT_LIST = "List folders:";
+    private static final String PRINT_LIST = "List remote folders:";
 
     private static final String NEW_FOLDER_NAME = "New folder ";
 
@@ -31,7 +31,9 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
     @SneakyThrows
     public void printListFolderNameRoot() {
         System.out.println(PRINT_LIST);
-        for (final Node node : getListFolderNameRoot()) System.out.println(node.getName());
+        for (final Node node : getListFolderNameRoot()) {
+            System.out.println(node.getPath());
+        }
     }
 
     @Override
@@ -40,12 +42,6 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
         final Node root = applicationService.getRootNode();
         if (root == null) return Collections.emptyList();
         listFolderName = getListFolderNameService(root);
-        return listFolderName;
-    }
-
-    public @NotNull List<Node> getListFolderNameInFolder(@NotNull final Node checkFolder) {
-        final List<Node> listFolderName;
-        listFolderName = getListFolderNameService(checkFolder);
         return listFolderName;
     }
 
@@ -72,6 +68,7 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
         final Node root = applicationService.getRootNode();
         if (root == null) return;
         root.addNode(newFolderName, NT_FOLDER);
+        applicationService.save();
     }
 
     @Override
@@ -82,18 +79,22 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
         if (root == null) return;
         final Node node = root.getNode(folderName);
         node.remove();
+        applicationService.save();
     }
 
     @Override
     @SneakyThrows
     public void clearRoot() {
         final Node root = applicationService.getRootNode();
-        final NodeIterator nt = root.getNodes();
-        while (nt.hasNext()) {
-            final Node node = nt.nextNode();
-            final NodeType nodeType = node.getPrimaryNodeType();
-            final boolean isFolder = nodeType.isNodeType(NT_FOLDER);
-            if (isFolder) node.remove();
+        final NodeIterator nt;
+        if (root != null) {
+            nt = root.getNodes();
+            while (nt.hasNext()) {
+                final Node node = nt.nextNode();
+                final NodeType nodeType = node.getPrimaryNodeType();
+                final boolean isFolder = nodeType.isNodeType(NT_FOLDER);
+                if (isFolder) node.remove();
+            }
         }
     }
 

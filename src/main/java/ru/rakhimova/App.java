@@ -1,30 +1,17 @@
 package ru.rakhimova;
 
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import ru.rakhimova.GUI.ClientGUI;
 import ru.rakhimova.bean.service.BootstrapServiceBean;
 
 import javax.enterprise.inject.se.SeContainerInitializer;
 
-public class App extends Application {
+public class App {
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-
-        final Parent root = FXMLLoader.load(getClass().getResource("/fxml/mainFrame.fxml"));
-        final Scene scene = new Scene(root, 730, 350);
-        primaryStage.setTitle("FileCloud");
-        primaryStage.setScene(scene);
-        primaryStage.getScene().getStylesheets().add("css/styleMainFrame.css");
-        primaryStage.show();
-    }
+    private static ClientGUI clientUI = new ClientGUI();
 
     public static void main(String[] args) {
         SeContainerInitializer.newInstance().addPackages(App.class).initialize().select(BootstrapServiceBean.class).get().init();
-        launch(App.class, args);
+        clientUI.startUI();
     }
 
 }

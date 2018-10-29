@@ -9,6 +9,7 @@ import ru.rakhimova.system.SettingService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +19,7 @@ public class FolderLocalServiceBean implements FolderLocalService {
 
     private static final String NEW_FOLDER_NAME = "New folder ";
 
-    private static final String PRINT_LIST = "List folders:";
+    private static final String PRINT_LIST = "List local folders:";
 
     @Inject
     private SettingService settingService;
@@ -34,18 +35,19 @@ public class FolderLocalServiceBean implements FolderLocalService {
     @Override
     public void printListFolderNameRoot() {
         System.out.println(PRINT_LIST);
-        for (final String name : getListFolderNameRoot()) System.out.println(name);
+        for (final File name : getListFolderNameRoot()) System.out.println(name.toString());
     }
 
     @Override
-    public @NotNull List<String> getListFolderNameRoot() {
+    public @NotNull List<File> getListFolderNameRoot() {
         final File root = getRoot();
-        final String[] directories = root.list((dir, name) -> new File(dir, name).isDirectory());
-        if (directories == null) return Collections.emptyList();
-        return Arrays.asList(directories);
+        File[] arrayFolders = root.listFiles(File::isDirectory);
+        if (arrayFolders != null) {
+            return new ArrayList<>(Arrays.asList(arrayFolders));
+        } else return Collections.emptyList();
     }
 
-    private File getRoot() {
+    public File getRoot() {
         return new File(settingService.getSyncFolder());
     }
 
@@ -56,7 +58,8 @@ public class FolderLocalServiceBean implements FolderLocalService {
             newFolderName = NEW_FOLDER_NAME + random;
         }
         String syncFolderName = settingService.getSyncFolder();
-        final File file = new File(syncFolderName + newFolderName);
+        String path = syncFolderName + newFolderName;
+        final File file = new File(path);
         file.mkdirs();
     }
 
@@ -70,10 +73,11 @@ public class FolderLocalServiceBean implements FolderLocalService {
     @Override
     public void clearRoot() {
         final File root = getRoot();
-        final List<String> directories = getListFolderNameRoot();
-        for (final String name : directories) {
-            final File file = new File(root, name);
-            file.delete();
+        File[] directories = root.listFiles();
+        if (directories != null) {
+            for (File file : directories) {
+                file.delete();
+            }
         }
     }
 

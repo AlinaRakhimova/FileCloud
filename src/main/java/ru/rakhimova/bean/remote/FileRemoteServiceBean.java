@@ -9,7 +9,10 @@ import ru.rakhimova.system.ApplicationService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.jcr.*;
+import javax.jcr.Binary;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -24,13 +27,13 @@ public class FileRemoteServiceBean implements FileRemoteService {
 
     private static final String NT_FILE = "nt:file";
 
-    private static final String JCR_JAVA = "jcr:java";
+    private static final String JCR_DATA = "jcr:data";
 
     private static final String JCR_CONTENT = "jcr:content";
 
     private static final String NT_RESOURCE = "nt:resource";
 
-    private static final String JCR_LAST_MODIFIER = "jcr:lastModifier";
+    private static final String JCR_LAST_MODIFIER = "jcr:lastModified";
 
     @Inject
     private ApplicationService applicationService;
@@ -48,12 +51,6 @@ public class FileRemoteServiceBean implements FileRemoteService {
         final Node root = applicationService.getRootNode();
         if (root == null) return Collections.emptyList();
         listFolderName = getListFileNameService(root);
-        return listFolderName;
-    }
-
-    public @NotNull List<Node> getListFileNameInFolder(@NotNull final Node mainFolder) {
-        final List<Node> listFolderName;
-        listFolderName = getListFileNameService(mainFolder);
         return listFolderName;
     }
 
@@ -91,7 +88,7 @@ public class FileRemoteServiceBean implements FileRemoteService {
         final Node root = applicationService.getRootNode();
         if (root == null) return new byte[]{};
         final Node node = root.getNode(name);
-        final Binary binary = node.getProperty(JCR_JAVA).getBinary();
+        final Binary binary = node.getProperty(JCR_DATA).getBinary();
         return IOUtils.toByteArray(binary.getStream());
     }
 
@@ -106,9 +103,11 @@ public class FileRemoteServiceBean implements FileRemoteService {
         final Node contentNode = file.addNode(JCR_CONTENT, NT_RESOURCE);
         final ByteArrayInputStream stream = new ByteArrayInputStream(data);
         final Binary binary = session.getValueFactory().createBinary(stream);
-        contentNode.setProperty(JCR_JAVA, binary);
+        contentNode.setProperty(JCR_DATA, binary);
         final Calendar created = Calendar.getInstance();
-        contentNode.setProperty(JCR_LAST_MODIFIER, created); //FIXME
+        contentNode.setProperty(JCR_LAST_MODIFIER, created);
+        created.setTimeInMillis(created.getTimeInMillis());
+        session.save();
     }
 
     @Override

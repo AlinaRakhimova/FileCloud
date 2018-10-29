@@ -1,7 +1,10 @@
 package ru.rakhimova.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseEvent;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
@@ -9,11 +12,11 @@ import ru.rakhimova.bean.local.FileLocalServiceBean;
 import ru.rakhimova.bean.local.FolderLocalServiceBean;
 import ru.rakhimova.bean.remote.FileRemoteServiceBean;
 import ru.rakhimova.bean.remote.FolderRemoteServiceBean;
-import ru.rakhimova.bean.service.ApplicationServiceBean;
 import ru.rakhimova.bean.service.SettingServiceBean;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.nodetype.NodeType;
 import java.io.File;
 import java.util.ArrayDeque;
@@ -39,8 +42,6 @@ public class Controller {
 
     private SettingServiceBean settingService = CDI.current().select(SettingServiceBean.class).get();
 
-    private ApplicationServiceBean applicationService = CDI.current().select(ApplicationServiceBean.class).get();
-
     @FXML
     private TextField textFieldName;
 
@@ -50,13 +51,7 @@ public class Controller {
     @FXML
     private ToggleButton buttonRemote;
 
-    private File dir;
-
-    private Deque<File> stack;
-
     private TreeItem<String> rootTreeNode;
-
-    private Deque<Node> stackRemote;
 
     public void addFolder(MouseEvent mouseEvent) {
         final String folderName = textFieldName.getText();
@@ -98,81 +93,65 @@ public class Controller {
         } else showSyncFolder();
     }
 
-    private void showSyncFolder() { //FIXME: Исправить двойное отображение папок и файлов
+    private void showSyncFolder() { //FIXME: Задваивается отображение папок
         final String path = settingService.getSyncFolder();
         rootTreeNode = new TreeItem<>(LABEL_SYNC_FOLDER);
-        dir = new File(path);
+        File dir = new File(path);
         if (!dir.exists() || !dir.isDirectory()) {
             System.out.println("Incorrect directory name");
         }
-        stack = new ArrayDeque<>();
+        Deque<File> stack = new ArrayDeque<>();
         stack.add(dir);
         while (!stack.isEmpty()) {
             File element = stack.pollLast();
             if (element == null) continue;
-            addElementLocal(element);
+            addElementLocal(element, rootTreeNode);
         }
         treeViewFiles.setRoot(rootTreeNode);
     }
 
-    private void addElementLocal(@NotNull final File element) {
+    @SneakyThrows
+    private void addElementLocal(@NotNull final File element, TreeItem<String> rootTree) {
         if (element.isDirectory()) {
             TreeItem<String> newFolder = new TreeItem<>(element.getName());
             final File[] files = element.listFiles();
             if (files == null) return;
-            for (int i = files.length - 1; i >= 0; i--) {
-                final String fileName = files[i].getName();
-                newFolder.getChildren().add(new TreeItem<>(fileName));
-                stack.add(files[i]);
+            for (File file : files) {
+                final TreeItem<String> subLeafs = new TreeItem<>(file.getName());
+                newFolder.getChildren().add(subLeafs);
+                if (file.isDirectory()) {
+                    addElementLocal(file, subLeafs);
+                }
             }
-            final String newFolderName = newFolder.getValue();
-            final String syncFolder = dir.getName();
-            if (!newFolderName.equals(syncFolder)) {
-                rootTreeNode.getChildren().add(newFolder);
-            }
+            rootTree.getChildren().add(newFolder);
         }
     }
 
     @SneakyThrows
-    private void showRemoteRepository() { //FIXME: Не работает отобраджение в UI
+    private void showRemoteRepository() { //FIXME: Задваивается отображение папок
         rootTreeNode = new TreeItem<>(LABEL_ROOT_REMOTE_REPOSITORY);
-        final Node root = applicationService.getRootNode();
-        if (root == null) return;
-        folderRemoteService.printListFolderNameRoot();
-        fileRemoteService.printListFileNameRoot();
-        stackRemote = new ArrayDeque<>();
-        stackRemote.add(root);
-        while (!stack.isEmpty()) {
-            final Node node = stackRemote.pollLast();
-            if (node == null) continue;
-            addNode(root, node);
+        final List<Node> remoteListFolders = folderRemoteService.getListFolderNameRoot();
+        Deque<Node> stackRemote = new ArrayDeque<>(remoteListFolders);
+        while (!stackRemote.isEmpty()) {
+            final Node newFolder = stackRemote.pollLast();
+            if (newFolder != null) addNode(newFolder, rootTreeNode);
         }
         treeViewFiles.setRoot(rootTreeNode);
     }
 
     @SneakyThrows
-    private void addNode(@NotNull final Node root, @NotNull final Node node) {
-        final NodeType nodeType = node.getPrimaryNodeType();
-        final boolean isFolder = nodeType.isNodeType(NT_FOLDER);
-        if (isFolder) {
-            TreeItem<String> newFolder = new TreeItem<>(node.getName());
-            final List<Node> folders = folderRemoteService.getListFolderNameInFolder(node);
-            final List<Node> files = fileRemoteService.getListFileNameInFolder(node);
-            for (int i = folders.size() - 1; i >= 0; i--) {
-                String fileName = folders.get(i).getName();
-                newFolder.getChildren().add(new TreeItem<>(fileName));
-                stackRemote.add(folders.get(i));
-            }
-            for (int i = files.size() - 1; i >= 0; i--) {
-                String fileName = files.get(i).getName();
-                newFolder.getChildren().add(new TreeItem<>(fileName));
-            }
-            final String newFolderName = newFolder.getValue();
-            final String rootNodeName = root.getName();
-            if (!newFolderName.equals(rootNodeName)) {
-                rootTreeNode.getChildren().add(newFolder);
-            }
+    private void addNode(@NotNull final Node newFolder, @NotNull TreeItem<String> rootTreeNode) {
+        TreeItem<String> itemFolder = new TreeItem<>(newFolder.getName());
+        final NodeIterator nodeIterator = newFolder.getNodes();
+        while (nodeIterator.hasNext()) {
+            final Node node = nodeIterator.nextNode();
+            final NodeType nodeType = node.getPrimaryNodeType();
+            final boolean isFolder = nodeType.isNodeType(NT_FOLDER);
+            final TreeItem<String> chItemFolder = new TreeItem<>(node.getName());
+            itemFolder.getChildren().add(chItemFolder);
+            if (isFolder) addNode(node, itemFolder);
         }
+        rootTreeNode.getChildren().add(itemFolder);
     }
 
     public void changeFile(MouseEvent mouseEvent) {
