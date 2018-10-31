@@ -61,6 +61,14 @@ public class FileLocalServiceBean implements FileLocalService {
         return Files.readAllBytes(file.toPath());
     }
 
+    @Nullable
+    @SneakyThrows
+    public byte[] readDataToImport(@Nullable final String name) {
+        if (name == null || name.isEmpty()) return new byte[]{};
+        final File file = new File(name);
+        return Files.readAllBytes(file.toPath());
+    }
+
     @Override
     @SneakyThrows
     public void writeData(@Nullable final String name, @Nullable final byte[] data) {
