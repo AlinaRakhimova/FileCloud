@@ -11,7 +11,10 @@ import ru.rakhimova.system.TimerService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.jcr.*;
+import javax.jcr.Node;
+import javax.jcr.Repository;
+import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 
 @ApplicationScoped
 public class ApplicationServiceBean implements ApplicationService {
@@ -33,8 +36,8 @@ public class ApplicationServiceBean implements ApplicationService {
 
     @Loggable
     public void init() {
-        //  if (settingService.getSyncActive()) timerService.start(); //FIXME
         if (settingService.getJcrActive()) login();
+        if (settingService.getSyncActive()) timerService.start();
     }
 
     @Override
