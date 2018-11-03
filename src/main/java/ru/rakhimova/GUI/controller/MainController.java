@@ -1,11 +1,7 @@
-package ru.rakhimova.controller;
+package ru.rakhimova.GUI.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.*;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import ru.rakhimova.bean.local.FileLocalServiceBean;
@@ -13,6 +9,7 @@ import ru.rakhimova.bean.local.FolderLocalServiceBean;
 import ru.rakhimova.bean.remote.FileRemoteServiceBean;
 import ru.rakhimova.bean.remote.FolderRemoteServiceBean;
 import ru.rakhimova.bean.service.SettingServiceBean;
+import ru.rakhimova.bean.service.SyncServiceBean;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.jcr.Node;
@@ -23,12 +20,17 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
-public class Controller {
+public class MainController {
 
     private static final String BUTTON_LABEL_REMOTE = "Remote";
+
     private static final String BUTTON_LABEL_LOCAL = "Local";
+
     private static final String LABEL_ROOT_REMOTE_REPOSITORY = "Remote repository";
+
     private static final String LABEL_SYNC_FOLDER = "SyncFolder";
+
+    private static final String RIGHT_SEPARATOR = "/";
 
     private static final String NT_FOLDER = "nt:folder";
 
@@ -51,43 +53,72 @@ public class Controller {
     @FXML
     private ToggleButton buttonRemote;
 
+    @FXML
+    private MenuItem addFiles;
+
+    @FXML
+    private Label labelPath;
+
     private TreeItem<String> rootTreeNode;
 
-    public void addFolder(MouseEvent mouseEvent) {
-        final String folderName = textFieldName.getText();
+    public void addFolder() {
+        final String textLabelPath = labelPath.getText();
+        final String syncFolder = settingService.getSyncFolder();
+        String folderName;
+        String path;
         if (buttonRemote.isSelected()) {
+            if ((textLabelPath).equals(LABEL_ROOT_REMOTE_REPOSITORY)) path = "";
+            else path = textLabelPath.substring(LABEL_ROOT_REMOTE_REPOSITORY.length() + 1) + RIGHT_SEPARATOR;
+            folderName = path + textFieldName.getText();
             folderRemoteService.createFolder(folderName);
-        } else folderLocalService.createFolder(folderName);
-        refresh(mouseEvent);
+        } else {
+            if ((textLabelPath + RIGHT_SEPARATOR).equals(LABEL_SYNC_FOLDER + syncFolder.substring(1))) path = "";
+            else path = textLabelPath.substring(LABEL_SYNC_FOLDER.length() + syncFolder.length() - 1);
+            folderName = path + RIGHT_SEPARATOR + textFieldName.getText();
+            folderLocalService.createFolder(folderName);
+        }
+        refresh();
     }
 
-    public void addFile(MouseEvent mouseEvent) {
-        final String fileName = textFieldName.getText();
-        final String text = "Hello"; //FIXME: Реализовать редактирование содержимого файла
+    public void deleteFolder() {
+        final String textLabelPath = labelPath.getText();
+        final String syncFolder = settingService.getSyncFolder();
+        String path;
         if (buttonRemote.isSelected()) {
-            fileRemoteService.createTextFile(fileName, text);
-        } else fileLocalService.createTextFile(fileName, text);
-        refresh(mouseEvent);
-    }
-
-    public void deleteFile(MouseEvent mouseEvent) {
-        final String fileName = textFieldName.getText();
-        if (buttonRemote.isSelected()) {
-            fileRemoteService.deleteFile(fileName);
-        } else fileLocalService.deleteFile(fileName);
-        refresh(mouseEvent);
-    }
-
-    public void deleteFolder(MouseEvent mouseEvent) {
-        final String folderName = textFieldName.getText();
-        if (buttonRemote.isSelected()) {
-            folderRemoteService.deleteFolder(folderName);
-        } else folderLocalService.deleteFolder(folderName);
-        refresh(mouseEvent);
+            path = textLabelPath.substring(LABEL_ROOT_REMOTE_REPOSITORY.length() + 1);
+            folderRemoteService.deleteFolder(path);
+        } else {
+            path = textLabelPath.substring(LABEL_SYNC_FOLDER.length() + syncFolder.length() - 1);
+            folderLocalService.deleteFolder(path);
+        }
+        refresh();
     }
 
     @SneakyThrows
-    public void refresh(MouseEvent mouseEvent) {
+    public void addFile() {
+        final String textLabelPath = labelPath.getText();
+        String remoteFilePath;
+        String path;
+        if (buttonRemote.isSelected()) {
+            if ((textLabelPath).equals(LABEL_ROOT_REMOTE_REPOSITORY)) path = "";
+            else path = textLabelPath.substring(LABEL_ROOT_REMOTE_REPOSITORY.length() + 1) + RIGHT_SEPARATOR;
+            remoteFilePath = path + textFieldName.getText();
+            ImportFile importFile = new ImportFile();
+            importFile.init(remoteFilePath);
+        }
+    }
+
+    public void deleteFile() {
+        String textLabelPath = labelPath.getText();
+        String path = textLabelPath.substring(LABEL_SYNC_FOLDER.length() + settingService.getSyncFolder().length() - 1);
+        if (buttonRemote.isSelected()) {
+            fileRemoteService.deleteFile(path);
+        } else fileLocalService.deleteFile(path);
+        refresh();
+    }
+
+    @SneakyThrows
+    public void refresh() {
         if (buttonRemote.isSelected()) {
             showRemoteRepository();
         } else showSyncFolder();
@@ -154,16 +185,35 @@ public class Controller {
         rootTreeNode.getChildren().add(itemFolder);
     }
 
-    public void changeFile(MouseEvent mouseEvent) {
-        //TODO: Реализовать обработку выбора файла/папки
+    public void choosePath() {
+        MultipleSelectionModel<TreeItem<String>> selectionModel = treeViewFiles.getSelectionModel();
+        selectionModel.selectedItemProperty().addListener((changed, oldValue, newValue) -> {
+            if (newValue != null) {
+                String path = newValue.getValue();
+                TreeItem<String> parent = newValue.getParent();
+                while (parent != null) {
+                    path = parent.getValue() + RIGHT_SEPARATOR + path;
+                    parent = parent.getParent();
+                }
+                labelPath.setText(path);
+            }
+        });
     }
 
-    public void changeLabelRemote(MouseEvent mouseEvent) {
-        if (buttonRemote.isSelected()) buttonRemote.setText(BUTTON_LABEL_REMOTE);
-        else buttonRemote.setText(BUTTON_LABEL_LOCAL);
-        refresh(mouseEvent);
+    public void changeLabelRemote() {
+        if (buttonRemote.isSelected()) {
+            buttonRemote.setText(BUTTON_LABEL_REMOTE);
+            addFiles.setVisible(true);
+        } else {
+            buttonRemote.setText(BUTTON_LABEL_LOCAL);
+            addFiles.setVisible(false);
+        }
+        refresh();
+    }
+
+    public void onSynchronize() {
+        SyncServiceBean syncService = new SyncServiceBean();
+        syncService.sync();
     }
 
 }
-
-

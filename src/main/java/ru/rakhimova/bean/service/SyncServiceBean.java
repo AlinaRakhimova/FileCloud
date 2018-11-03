@@ -25,6 +25,8 @@ public class SyncServiceBean implements SyncService {
 
     private static final String NT_FOLDER = "nt:folder";
 
+    private static final String RIGHT_SEPARATOR = "/";
+
     private FolderRemoteServiceBean folderRemoteService = CDI.current().select(FolderRemoteServiceBean.class).get();
 
     private FileRemoteServiceBean fileRemoteService = CDI.current().select(FileRemoteServiceBean.class).get();
@@ -36,12 +38,8 @@ public class SyncServiceBean implements SyncService {
     private SettingServiceBean settingService = CDI.current().select(SettingServiceBean.class).get();
 
     private ApplicationServiceBean applicationService = CDI.current().select(ApplicationServiceBean.class).get();
-    private int sizeSyncDirectory;
 
-    @Override
-    public boolean status() {
-        return false;
-    }
+    private int sizeSyncDirectory;
 
     @Loggable
     @Override
@@ -70,7 +68,7 @@ public class SyncServiceBean implements SyncService {
             final File newFolder = nonexistentFolders.pollLast();
             if (newFolder == null) return;
             String pathLocal = newFolder.getPath();
-            String pathRemote = pathLocal.substring(sizeSyncDirectory).replace("\\", "/");
+            String pathRemote = pathLocal.substring(sizeSyncDirectory).replace("\\", RIGHT_SEPARATOR);
             folderRemoteService.createFolder(pathRemote);
             createSubFoldersLocal(nonexistentFolders, newFolder);
         }
@@ -85,7 +83,7 @@ public class SyncServiceBean implements SyncService {
             if (file.isDirectory()) {
                 nonexistentFolders.add(file);
             } else {
-                final String pathRemote = pathFile.replace("\\", "/");
+                final String pathRemote = pathFile.replace("\\", RIGHT_SEPARATOR);
                 final byte[] data = fileLocalService.readData(pathFile);
                 fileRemoteService.writeData(pathRemote, data);
             }
@@ -102,7 +100,7 @@ public class SyncServiceBean implements SyncService {
         while (!nonexistentFolders.isEmpty()) {
             final Node newFolder = nonexistentFolders.pollLast();
             if (newFolder != null) {
-                folderLocalService.createFolder(newFolder.getParent().getPath() + "/" + newFolder.getName());
+                folderLocalService.createFolder(newFolder.getParent().getPath() + RIGHT_SEPARATOR + newFolder.getName());
             }
             createSubFolders(nonexistentFolders, newFolder);
         }
@@ -117,7 +115,7 @@ public class SyncServiceBean implements SyncService {
                 final Node node = nodeIterator.nextNode();
                 final NodeType nodeType = node.getPrimaryNodeType();
                 final boolean isFolder = nodeType.isNodeType(NT_FOLDER);
-                final String nameFile = node.getParent().getPath() + "/" + node.getName();
+                final String nameFile = node.getParent().getPath() + RIGHT_SEPARATOR + node.getName();
                 if (isFolder) {
                     nonexistentFolders.add(node);
                 } else {
@@ -131,16 +129,7 @@ public class SyncServiceBean implements SyncService {
 
     private void synchronizeAll() {
         //TODO: Сделать синхронизацию при условии заполненности локального и удаленного репозитория
-    }
-
-    @Override
-    public boolean start() {
-        return false;
-    }
-
-    @Override
-    public boolean stop() {
-        return false;
+        System.out.println("Do synchronize all");
     }
 
 }

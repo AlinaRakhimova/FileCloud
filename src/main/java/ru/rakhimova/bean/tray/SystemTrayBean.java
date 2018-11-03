@@ -19,11 +19,21 @@ import static java.awt.SystemTray.getSystemTray;
 public class SystemTrayBean implements SystemTrayInterface {
 
     private static final String MESSAGE = "Data synchronization is in progress.";
+
     private static final String TITLE = "Synchronization";
+
     private static final String TRAY_ICON_PNG = ".\\src\\main\\resources\\image\\trayIcon.png";
 
+    private static final String LABEL_EXIT = "Exit";
+
+    private static final String LABEL_SYNCHRONIZE = "Synchronize";
+
+    private static final String LABEL_OPEN_APPLICATION = "Open application";
+
     private SyncServiceBean syncService = new SyncServiceBean();
+
     private SystemTray tray;
+
     private TrayIcon trayIcon;
 
     @Override
@@ -40,16 +50,16 @@ public class SystemTrayBean implements SystemTrayInterface {
         final Image image = ImageIO.read(new File(TRAY_ICON_PNG));
         trayIcon = new TrayIcon(image);
 
-        final MenuItem openItem = new MenuItem("Open application"); //FIXME: Открытие клиентского интерфейса производится только первый раз
+        final MenuItem openItem = new MenuItem(LABEL_OPEN_APPLICATION); //FIXME: Открытие клиентского интерфейса производится только первый раз
         openItem.addActionListener((ActionEvent event) -> Platform.runLater(() -> showStage(primaryStage)));
 
-        final MenuItem syncItem = new MenuItem("Synchronize");
+        final MenuItem syncItem = new MenuItem(LABEL_SYNCHRONIZE);
         syncItem.addActionListener(event -> {
             Platform.runLater(() -> syncService.sync());
             trayIcon.displayMessage(TITLE, MESSAGE, TrayIcon.MessageType.INFO);
         });
 
-        final MenuItem exitItem = new MenuItem("Exit");
+        final MenuItem exitItem = new MenuItem(LABEL_EXIT);
         exitItem.addActionListener(event -> {
             Platform.exit();
             tray.remove(trayIcon);
