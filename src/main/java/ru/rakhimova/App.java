@@ -1,17 +1,13 @@
 package ru.rakhimova;
 
-import ru.rakhimova.GUI.ClientGUI;
-import ru.rakhimova.bean.service.BootstrapServiceBean;
-
-import javax.enterprise.inject.se.SeContainerInitializer;
+import ru.rakhimova.GUI.SettingsGUI;
 
 public class App {
 
-    private static ClientGUI clientUI = new ClientGUI();
+    private static SettingsGUI settingsGUI = new SettingsGUI();
 
     public static void main(String[] args) {
-        SeContainerInitializer.newInstance().addPackages(App.class).initialize().select(BootstrapServiceBean.class).get().init();
-        clientUI.startUI();
+        settingsGUI.startGUI();
     }
 
 }

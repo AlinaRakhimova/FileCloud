@@ -1,14 +1,13 @@
 package ru.rakhimova.GUI;
 
-import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.jetbrains.annotations.NotNull;
+import lombok.SneakyThrows;
 import ru.rakhimova.GUI.tray.SystemTrayBean;
 
-public class ClientGUI extends Application {
+public class Client {
 
     private static final String TRAY_ICON_PNG = "/image/trayIcon.png";
 
@@ -18,20 +17,17 @@ public class ClientGUI extends Application {
 
     private static final String CSS_STYLE_MAIN_FRAME = "css/styleMainFrame.css";
 
-    @Override
-    public void start(@NotNull final Stage primaryStage) throws Exception {
+    @SneakyThrows
+    public void init() {
+        final Stage stage = new Stage();
         final Parent root = FXMLLoader.load(getClass().getResource(FXML_MAIN_FRAME));
         final Scene scene = new Scene(root, 730, 350);
-        primaryStage.setTitle(TITLE);
-        primaryStage.setScene(scene);
-        primaryStage.getScene().getStylesheets().add(CSS_STYLE_MAIN_FRAME);
-        primaryStage.getIcons().add(new javafx.scene.image.Image(TRAY_ICON_PNG));
+        stage.setTitle(TITLE);
+        stage.setScene(scene);
+        stage.getScene().getStylesheets().add(CSS_STYLE_MAIN_FRAME);
+        stage.getIcons().add(new javafx.scene.image.Image(TRAY_ICON_PNG));
 
         final SystemTrayBean systemTray = new SystemTrayBean();
-        systemTray.addAppToTray(primaryStage);
-    }
-
-    public void startUI() {
-        launch(ClientGUI.class);
+        systemTray.addAppToTray(stage);
     }
 }

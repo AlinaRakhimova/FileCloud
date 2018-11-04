@@ -21,8 +21,6 @@ public class ImportFile {
 
     private static final String LEFT_SEPARATOR = "\\";
 
-    private SettingServiceBean settingService = CDI.current().select(SettingServiceBean.class).get();
-
     @FXML
     private Button buttonFileChooser;
 
@@ -35,6 +33,8 @@ public class ImportFile {
     private FileLocalServiceBean fileLocalService = CDI.current().select(FileLocalServiceBean.class).get();
 
     private FileRemoteServiceBean fileRemoteService = CDI.current().select(FileRemoteServiceBean.class).get();
+
+    private SettingServiceBean settingService = CDI.current().select(SettingServiceBean.class).get();
 
     private Stage stage;
 
@@ -52,6 +52,7 @@ public class ImportFile {
         final String fileName = filePath.substring(filePath.lastIndexOf(LEFT_SEPARATOR) + 1);
         final byte[] data = fileLocalService.readDataToImport(filePath);
         final String remoteFilePath = labelRemotePath.getText();
+        textFieldChooseFile.getScene().getWindow().hide();
         fileRemoteService.writeData(remoteFilePath + fileName, data);
     }
 
