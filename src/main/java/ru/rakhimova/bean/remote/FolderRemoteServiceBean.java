@@ -96,6 +96,7 @@ public class FolderRemoteServiceBean implements FolderRemoteService {
                 if (isFolder) node.remove();
             }
         }
+        applicationService.save();
     }
 
 }

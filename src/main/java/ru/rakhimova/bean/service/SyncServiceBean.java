@@ -3,6 +3,7 @@ package ru.rakhimova.bean.service;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.rakhimova.GUI.tray.SystemTrayBean;
 import ru.rakhimova.annotation.Loggable;
 import ru.rakhimova.bean.local.FileLocalServiceBean;
 import ru.rakhimova.bean.local.FolderLocalServiceBean;
@@ -26,6 +27,8 @@ public class SyncServiceBean implements SyncService {
     private static final String NT_FOLDER = "nt:folder";
 
     private static final String RIGHT_SEPARATOR = "/";
+
+    private static final String LEFT_SEPARATOR = "\\";
 
     private FolderRemoteServiceBean folderRemoteService = CDI.current().select(FolderRemoteServiceBean.class).get();
 
@@ -58,17 +61,22 @@ public class SyncServiceBean implements SyncService {
         applicationService.save();
     }
 
+    public void showTrayMassage() {
+        final SystemTrayBean trayBean = new SystemTrayBean();
+        trayBean.showMessage();
+    }
+
     private void syncFoldersFromLocal() {
         sizeSyncDirectory = settingService.getSyncFolder().length();
         final List<File> localListFolders = folderLocalService.getListFolderNameRoot();
-        Deque<File> nonexistentFolders = new ArrayDeque<>(localListFolders);
+        final Deque<File> nonexistentFolders = new ArrayDeque<>(localListFolders);
         fileRemoteService.clearRoot();
         folderRemoteService.clearRoot();
         while (!nonexistentFolders.isEmpty()) {
             final File newFolder = nonexistentFolders.pollLast();
             if (newFolder == null) return;
-            String pathLocal = newFolder.getPath();
-            String pathRemote = pathLocal.substring(sizeSyncDirectory).replace("\\", RIGHT_SEPARATOR);
+            final String pathLocal = newFolder.getPath();
+            final String pathRemote = pathLocal.substring(sizeSyncDirectory).replace(LEFT_SEPARATOR, RIGHT_SEPARATOR);
             folderRemoteService.createFolder(pathRemote);
             createSubFoldersLocal(nonexistentFolders, newFolder);
         }
@@ -83,7 +91,7 @@ public class SyncServiceBean implements SyncService {
             if (file.isDirectory()) {
                 nonexistentFolders.add(file);
             } else {
-                final String pathRemote = pathFile.replace("\\", RIGHT_SEPARATOR);
+                final String pathRemote = pathFile.replace(LEFT_SEPARATOR, RIGHT_SEPARATOR);
                 final byte[] data = fileLocalService.readData(pathFile);
                 fileRemoteService.writeData(pathRemote, data);
             }
@@ -94,7 +102,7 @@ public class SyncServiceBean implements SyncService {
     @Loggable
     private void syncFoldersFromRemote() {
         final List<Node> remoteListFolders = folderRemoteService.getListFolderNameRoot();
-        Deque<Node> nonexistentFolders = new ArrayDeque<>(remoteListFolders);
+        final Deque<Node> nonexistentFolders = new ArrayDeque<>(remoteListFolders);
         fileLocalService.clearRoot();
         folderLocalService.clearRoot(); //FIXME: Не проиходит удаление папок. Предположительно из-за наличия вложенных файлов
         while (!nonexistentFolders.isEmpty()) {

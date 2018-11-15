@@ -79,6 +79,7 @@ public class FileRemoteServiceBean implements FileRemoteService {
             final boolean isFile = nodeType.isNodeType(NT_FILE);
             if (isFile) node.remove();
         }
+        applicationService.save();
     }
 
     @Override
@@ -94,7 +95,7 @@ public class FileRemoteServiceBean implements FileRemoteService {
 
     @Override
     @SneakyThrows
-    public void writeData(@Nullable final String name, @Nullable final byte[] data) {
+    public void writeData(@Nullable String name, @Nullable final byte[] data) {
         if (name == null || name.isEmpty()) return;
         final Session session = applicationService.session();
         if (session == null) return;

@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.effect.*?>
 <?import javafx.scene.layout.*?>
 <GridPane xmlns:fx="http://javafx.com/fxml/1" alignment="center" hgap="10" prefHeight="345.0" prefWidth="698.0"
           vgap="10" xmlns="http://javafx.com/javafx/8" fx:controller="ru.rakhimova.GUI.controller.MainController">
@@ -31,27 +30,14 @@
              </MenuButton>
              <MenuButton mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="File">
                  <items>
-                     <MenuItem fx:id="addFiles" mnemonicParsing="false" onAction="#addFile" text="Import file"
-                               visible="false"/>
+                     <MenuItem fx:id="addFiles" mnemonicParsing="false" onAction="#addFile" text="Import file"/>
                      <MenuItem fx:id="deleteFileM" mnemonicParsing="false" onAction="#deleteFile" text="Delete file"/>
                  </items>
              </MenuButton>
-             <Label prefHeight="17.0" prefWidth="93.0" text="Name file/folder: "/>
-             <TextField id="textFieldName" fx:id="textFieldName" prefHeight="25.0" prefWidth="128.0"/>
-             <ToggleButton id="buttonRemote" fx:id="buttonRemote" mnemonicParsing="false"
-                           onMouseClicked="#changeLabelRemote" prefHeight="25.0" prefWidth="63.0" text="Local"
-                           textAlignment="CENTER">
-                 <effect>
-                     <Lighting>
-                         <bumpInput>
-                             <Shadow/>
-                         </bumpInput>
-                         <light>
-                             <Light.Distant/>
-                         </light>
-                     </Lighting>
-                 </effect>
-             </ToggleButton>
+             <Separator minHeight="-Infinity" minWidth="-Infinity" opacity="0.0" orientation="VERTICAL"
+                        prefHeight="30.0" prefWidth="30.0"/>
+             <Label prefHeight="17.0" prefWidth="125.0" text="Enter name new folder:"/>
+             <TextField id="textFieldName" fx:id="textFieldName" prefHeight="25.0" prefWidth="133.0"/>
          </children>
          <opaqueInsets>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />

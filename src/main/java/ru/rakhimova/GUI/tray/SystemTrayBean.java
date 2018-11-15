@@ -1,4 +1,4 @@
-package ru.rakhimova.bean.tray;
+package ru.rakhimova.GUI.tray;
 
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -56,7 +56,7 @@ public class SystemTrayBean implements SystemTrayInterface {
         final MenuItem syncItem = new MenuItem(LABEL_SYNCHRONIZE);
         syncItem.addActionListener(event -> {
             Platform.runLater(() -> syncService.sync());
-            trayIcon.displayMessage(TITLE, MESSAGE, TrayIcon.MessageType.INFO);
+            showMessage();
         });
 
         final MenuItem exitItem = new MenuItem(LABEL_EXIT);
@@ -75,9 +75,12 @@ public class SystemTrayBean implements SystemTrayInterface {
         tray.add(trayIcon);
     }
 
+    public void showMessage() {
+        if (trayIcon != null) trayIcon.displayMessage(TITLE, MESSAGE, TrayIcon.MessageType.INFO);
+    }
+
     private void showStage(@NotNull final Stage primaryStage) {
         primaryStage.toFront();
-        primaryStage.setAlwaysOnTop(true);
         primaryStage.show();
     }
 
